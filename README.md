@@ -4,6 +4,8 @@ This project is a Discord bot designed to interface with a websocket server. The
 
 This project was created for bridging Discord data into [Cables.gl](https://cables.gl).
 
+Example patch for using this in cables: https://cables.gl/edit/mFyfQ6
+
 ## Setup
 
 ### Requirements
