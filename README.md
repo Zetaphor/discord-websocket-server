@@ -22,6 +22,8 @@ Create a .env file in the project root with the following content:
 DISCORD_TOKEN=your_discord_bot_token
 WEBSOCKET_HOST=0.0.0.0
 WEBSOCKET_PORT=6879
+SSL_CERT_FILE=./fullchain.pem
+SSL_KEY_FILE=./privkey.pem
 ```
 
 Replace `your_discord_bot_token` with your actual Discord bot token.
@@ -33,6 +35,10 @@ https://discordpy.readthedocs.io/en/stable/discord.html
 ## Running
 
 Run the bot with `python main.py`.
+
+You will need to get an SSL certificate and configure the location of the fullchain and private key in the `.env` file.
+
+You can get a free SSL certificate from LetsEncrypt using the certbot.
 
 ## Configuring as a service
 
