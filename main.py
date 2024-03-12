@@ -106,19 +106,26 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    # Extract and replace custom emojis in the message
     modified_content, message_parts, has_emoji = replace_custom_emojis(message.content)
     modified_content = await replace_mentions_with_usernames(modified_content, message.guild)
 
     if modified_content.strip() == "":
         return
 
-    has_attachments = len(attachment_urls) > 0
-    attachment_urls = [attachment.url for attachment in message.attachments]
-    attachment_video = any(attachment.content_type and 'video' in attachment.content_type for attachment in message.attachments)
-    attachment_image = any(attachment.content_type and 'image' in attachment.content_type for attachment in message.attachments)
+    print('Raw message:', message.content)
 
-    # Construct payload with additional fields
+    image_urls = []
+    video_urls = []
+
+    for attachment in message.attachments:
+        if attachment.content_type and 'image' in attachment.content_type:
+            image_urls.append(attachment.url)
+        elif attachment.content_type and 'video' in attachment.content_type:
+            video_urls.append(attachment.url)
+
+    has_images = len(image_urls) > 0
+    has_videos = len(video_urls) > 0
+
     payload = {
         "channel_name": message.channel.name,
         "content": modified_content,
@@ -126,13 +133,16 @@ async def on_message(message):
         "avatar_url": message.author.display_avatar.url,
         "message_parts": message_parts,
         "has_emoji": has_emoji,
-        "has_attachments": has_attachments,
-        "attachment_urls": attachment_urls,
-        "attachment_video": attachment_video,
-        "attachment_image": attachment_image
+        "has_images": has_images,
+        "has_videos": has_videos,
+        "image_urls": image_urls,
+        "video_urls": video_urls
     }
 
+    print('Payload:', payload)
+
     await notify_clients(payload)
+
 
 @client.event
 async def on_ready():
