@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 token = os.getenv('DISCORD_TOKEN')
+websocket_host = os.getenv('WEBSOCKET_HOST', 'localhost')
+websocket_port = os.getenv('WEBSOCKET_PORT', 6789)
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -93,7 +95,7 @@ async def on_ready():
     print(f'We have logged in as {client.user}')
 
 async def main():
-    websocket_server_ = websockets.serve(websocket_server, 'localhost', 6789)
+    websocket_server_ = websockets.serve(websocket_server, websocket_host, websocket_port)
     await asyncio.gather(client.start(token), websocket_server_)
 
 asyncio.run(main())

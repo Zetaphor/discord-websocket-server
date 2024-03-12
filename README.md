@@ -20,6 +20,8 @@ Create a .env file in the project root with the following content:
 
 ```makefile
 DISCORD_TOKEN=your_discord_bot_token
+WEBSOCKET_HOST=0.0.0.0
+WEBSOCKET_PORT=6879
 ```
 
 Replace `your_discord_bot_token` with your actual Discord bot token.
