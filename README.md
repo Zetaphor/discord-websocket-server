@@ -62,3 +62,38 @@ sudo systemctl status discord_server.service # Check the status
 sudo journalctl -u discord_server.service # View the logs
 sudo systemctl stop discord_server.service # Stop the service
 ```
+
+## Example output:
+
+The `message_parts` array will contain the message split on any emoji, so that URLs can be easily parsed.
+
+With emoji:
+
+```json
+{
+    "channel_name": "bot-testing",
+    "content": "Forgot to connect facepalm",
+    "username": "zetaphor",
+    "avatar_url": "https://cdn.discordapp.com/avatars/134317574342180864/dd1c8320d2dc84c52f36e6d913bedcec.png?size=1024",
+    "message_parts": [
+        "Forgot to connect ",
+        "https://cdn.discordapp.com/emojis/1217142444290740325.png"
+    ],
+    "has_emoji": true
+}
+```
+
+Without emoji:
+
+```json
+{
+    "channel_name": "bot-testing",
+    "content": "Awesome",
+    "username": "zetaphor",
+    "avatar_url": "https://cdn.discordapp.com/avatars/134317574342180864/dd1c8320d2dc84c52f36e6d913bedcec.png?size=1024",
+    "message_parts": [
+        "Awesome"
+    ],
+    "has_emoji": false
+}
+```

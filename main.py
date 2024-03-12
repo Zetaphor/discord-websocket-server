@@ -39,10 +39,6 @@ async def websocket_server(websocket, path):
     finally:
         await unregister(websocket)
 
-def replace_custom_emojis(content):
-    custom_emoji_pattern = re.compile(r'<a?:(\w+):(\d+)>')
-    return custom_emoji_pattern.sub(lambda m: f'https://cdn.discordapp.com/emojis/{m.group(2)}.{ "gif" if m.group(0).startswith("<a") else "png"}', content)
-
 async def replace_mentions_with_usernames(content, guild):
     mention_pattern = re.compile(r'<@!?(\d+)>')
 
@@ -69,24 +65,57 @@ def get_sticker_url(message):
         return message.stickers[0].url
     return None
 
+def replace_custom_emojis(content):
+    custom_emoji_pattern = re.compile(r'<a?:(\w+):(\d+)>')
+    emoji_replacements = []
+    message_parts = []
+    last_pos = 0
+    has_emoji = False
+
+    for match in custom_emoji_pattern.finditer(content):
+        has_emoji = True
+        start, end = match.span()
+        emoji_name = match.group(1)
+        emoji_url = f'https://cdn.discordapp.com/emojis/{match.group(2)}.{ "gif" if match.group(0).startswith("<a") else "png"}'
+
+        if start > last_pos:
+            message_parts.append(content[last_pos:start])
+
+        emoji_replacements.append((start, end, emoji_name, emoji_url))
+        message_parts.append(emoji_url)
+
+        last_pos = end
+
+    if last_pos < len(content):
+        message_parts.append(content[last_pos:])
+
+    modified_content = ''
+    last_end = 0
+    for start, end, emoji_name, _ in emoji_replacements:
+        modified_content += content[last_end:start] + emoji_name
+        last_end = end
+    modified_content += content[last_end:]
+
+    return modified_content, message_parts, has_emoji
+
 @client.event
 async def on_message(message):
     if message.author == client.user:
         return
 
-    modified_content = replace_custom_emojis(message.content)
+    modified_content, message_parts, has_emoji = replace_custom_emojis(message.content)
     modified_content = await replace_mentions_with_usernames(modified_content, message.guild)
 
-    # sticker_url = get_sticker_url(message)
-
-    if modified_content == "":
+    if modified_content.strip() == "":
         return
 
     payload = {
         "channel_name": message.channel.name,
         "content": modified_content,
         "username": message.author.name,
-        "avatar_url": message.author.display_avatar.url
+        "avatar_url": message.author.display_avatar.url,
+        "message_parts": message_parts,
+        "has_emoji": has_emoji
     }
     await notify_clients(payload)
 
