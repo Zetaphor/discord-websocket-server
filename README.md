@@ -33,3 +33,32 @@ https://discordpy.readthedocs.io/en/stable/discord.html
 ## Running
 
 Run the bot with `python main.py`.
+
+## Configuring as a service
+
+To use run the bot as a systemd service, create `etc/systemd/system/discord_server.service` with the following content:
+
+```bash
+[Unit]
+Description=Discord Bot Service
+After=network.target
+
+[Service]
+Type=simple
+User=<your_username>
+WorkingDirectory=/path/to/the/project
+ExecStart=/usr/bin/python3 /path/to/main.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl daemon-reload # Reload systemd
+sudo systemctl enable discord_server.service # Enable the service
+sudo systemctl start discord_server.service # Start the service
+sudo systemctl status discord_server.service # Check the status
+sudo journalctl -u discord_server.service # View the logs
+sudo systemctl stop discord_server.service # Stop the service
+```
