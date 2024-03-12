@@ -1,3 +1,4 @@
+import ssl
 import discord
 import os
 import json
@@ -11,6 +12,8 @@ load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
 websocket_host = os.getenv('WEBSOCKET_HOST', 'localhost')
 websocket_port = os.getenv('WEBSOCKET_PORT', 6789)
+ssl_cert_file = os.getenv('SSL_CERT_FILE')
+ssl_key_file = os.getenv('SSL_KEY_FILE')
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -103,28 +106,46 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    # Extract and replace custom emojis in the message
     modified_content, message_parts, has_emoji = replace_custom_emojis(message.content)
     modified_content = await replace_mentions_with_usernames(modified_content, message.guild)
 
     if modified_content.strip() == "":
         return
 
+    has_attachments = len(attachment_urls) > 0
+    attachment_urls = [attachment.url for attachment in message.attachments]
+    attachment_video = any(attachment.content_type and 'video' in attachment.content_type for attachment in message.attachments)
+    attachment_image = any(attachment.content_type and 'image' in attachment.content_type for attachment in message.attachments)
+
+    # Construct payload with additional fields
     payload = {
         "channel_name": message.channel.name,
         "content": modified_content,
         "username": message.author.name,
         "avatar_url": message.author.display_avatar.url,
         "message_parts": message_parts,
-        "has_emoji": has_emoji
+        "has_emoji": has_emoji,
+        "has_attachments": has_attachments,
+        "attachment_urls": attachment_urls,
+        "attachment_video": attachment_video,
+        "attachment_image": attachment_image
     }
+
     await notify_clients(payload)
 
 @client.event
 async def on_ready():
     print(f'We have logged in as {client.user}')
 
+
+
+ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+ssl_context.load_cert_chain(ssl_cert_file, ssl_key_file)
+
+
 async def main():
-    websocket_server_ = websockets.serve(websocket_server, websocket_host, websocket_port)
+    websocket_server_ = websockets.serve(websocket_server, websocket_host, websocket_port, ssl=ssl_context)
     print(f"Websocket server running on {websocket_host}:{websocket_port}")
     await asyncio.gather(client.start(token), websocket_server_)
 
