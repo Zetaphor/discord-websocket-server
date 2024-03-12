@@ -96,6 +96,7 @@ async def on_ready():
 
 async def main():
     websocket_server_ = websockets.serve(websocket_server, websocket_host, websocket_port)
+    print(f"Websocket server running on {websocket_host}:{websocket_port}")
     await asyncio.gather(client.start(token), websocket_server_)
 
 asyncio.run(main())
